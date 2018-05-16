@@ -20,6 +20,7 @@ Straight method is represented by `percolation.py` (library module) and `percola
 Also two modes of operation are present:
   - **Single experiment**: performs one run, display grid and result. Also percolated clusters are highlighted by colors. Find sample images in `./example_samples/single_experiment` and `example_samples/single_experiment_graph` folders;
   - **Series of experiments**: quietly runs without displaying grids (only progress). At each step we increment the probability of cell occupation and also for every probability perform N experiments. We can plot the relation between some parameter (e.g., fraction of percolated cluster in all occupied cells or fraction of experiments ended with percolation) and probability. Single script `percolation_threshold.py` provide this functionality and uses either both methods for your choice.
+
   ![series example](/example_samples/series_of_experiments/plot.png)
 
 
@@ -30,11 +31,15 @@ Also two modes of operation are present:
 
 # Some other samples
   - Grid with occupied cells' labels and graph structure:
+
     ![grid](/example_samples/single_experiment_graph/5x5,0.4.png)
     ![graphs](/example_samples/single_experiment_graph/5x5,0.4_graphs.png)
   - Grid with table showing labeling mechanism work (first method):
+
     ![grid with table](example_samples/single_experiment/10x5,0.4_table.png)
   - Source grid image (obviously hard to say whether the percolation is here or not by a human vision):
+
   ![source grid](/example_samples/single_experiment_graph/100x40,0.4_src.png)
   - Grid with 3 clusters:
+  
   ![3 clusters](/example_samples/single_experiment_graph/40x100,0.4_3clusters.png)
