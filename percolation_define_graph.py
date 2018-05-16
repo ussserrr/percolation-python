@@ -11,18 +11,30 @@ import numpy as np
 from percolation import generate_grid
 
 
-grid_x_dimension = 15
-grid_y_dimension = 15
+#
+# Parameters
+#
+grid_x_dimension = 5
+grid_y_dimension = 5
+
 probability_of_zero = 0.4
 
-max_size = 11  # max size to draw labels on cells
+# Maximal size to draw labels on cells (also defines the way to highlight
+# clusters and displaying the graph, see below)
+max_size = 11
 
 
+#
+# Generate and display grid via matplotlib
+#
 grid = generate_grid(grid_y_dimension, grid_x_dimension, probability_of_zero)
 plt.matshow( grid[1:-1, 1:-1], fignum=0, cmap=plt.cm.gray_r )
 
 
-# every occupied cell is a graph node
+#
+# Create graph where each node represent one occupied cell of the grid. If the
+# grid is not too big, put labels (IDs) over it
+#
 G = nx.Graph()
 idx = 0
 for y in range(1, grid_y_dimension+1):
@@ -32,15 +44,20 @@ for y in range(1, grid_y_dimension+1):
 
             if grid_x_dimension<=max_size and grid_y_dimension<=max_size:
                 plt.annotate( '{}'.format(idx), xy=(x-1,y-1), color='white',
-                              horizontalalignment='center', verticalalignment='center' )
+                              horizontalalignment='center',
+                              verticalalignment='center' )
 
             idx += 1
 
 
-# connect (add edges) neighboring nodes (i.e. neighboring occupied cells) to one cluster
+#
+# Connect (add edges) neighboring nodes (i.e. neighboring occupied cells) to
+# one cluster
+#
 num_of_ones = len(G)
 for i in range(num_of_ones):
-    y = G.nodes[i]['coords'][0]; x = G.nodes[i]['coords'][1]
+    # extract coordinates
+    y,x = G.nodes[i]['coords'][0], G.nodes[i]['coords'][1]
 
     if grid[y-1][x]==1:
         for node in G.nodes.items():
@@ -53,11 +70,22 @@ for i in range(num_of_ones):
                 G.add_edge( i, node[0] )
 
 
-# select clusters (subgraphs) from graph to define percolation and its type
+#
+# Define whether there is a percolation and what its type
+#
 cells_to_highlight = []
+
+# This mode used for big grids (bigger than max_size for at least one dimension).
+# plt.matshow() function colorizing cells based on their value so we can assign
+# different values to each cluster and plt.matshow() will automatically
+# highlight them for us. Because '0' and '1' already go for free and occupied
+# cells respectively, this is a start value for enumerating
 percolated_cluster_grid_value = 2
+
 upwards_global = False
 lefttoright_global = False
+
+# select clusters (subgraphs) from graph
 for cluster in nx.connected_component_subgraphs(G):
     upwards = False
     lefttoright = False
@@ -81,25 +109,19 @@ for cluster in nx.connected_component_subgraphs(G):
     if (1 in xs) and (grid_x_dimension in xs):
         lefttoright = True
 
-    if upwards and not lefttoright:
-        upwards_global = True
+    if upwards or lefttoright:
         for y,x in coords:
             grid[y][x] = percolated_cluster_grid_value
             cells_to_highlight.append([y,x])
         percolated_cluster_grid_value += 1
-    elif not upwards and lefttoright:
-        lefttoright_global = True
-        for y,x in coords:
-            grid[y][x] = percolated_cluster_grid_value
-            cells_to_highlight.append([y,x])
-        percolated_cluster_grid_value += 1
-    elif upwards and lefttoright:
-        upwards_global = True
-        lefttoright_global = True
-        for y,x in coords:
-            grid[y][x] = percolated_cluster_grid_value
-            cells_to_highlight.append([y,x])
-        percolated_cluster_grid_value += 1
+
+        if upwards and not lefttoright:
+            upwards_global = True
+        elif not upwards and lefttoright:
+            lefttoright_global = True
+        elif upwards and lefttoright:
+            upwards_global = True
+            lefttoright_global = True
 
 
 if upwards_global and not lefttoright_global:
@@ -112,6 +134,12 @@ else:
     print("There is no percolation")
 
 
+#
+# Highlight percolated clusters by one of two methods. If grid is big enough
+# (bigger than max_size for at least one dimension), we colorize each percolated
+# cluster using plt.matshow() (see percolated_cluster_grid_value), otherwise
+# paint all percolated cluster in one color by putting another layer on it
+#
 if grid_x_dimension<=max_size and grid_y_dimension<=max_size:
     highlighted = np.zeros_like(grid)
     if cells_to_highlight != []:
@@ -120,11 +148,14 @@ if grid_x_dimension<=max_size and grid_y_dimension<=max_size:
     plt.matshow( highlighted[1:-1, 1:-1], fignum=0, cmap='Reds', alpha=0.5 )
 else:
     plt.matshow( grid[1:-1, 1:-1] )
-plt.suptitle("{}x{}, P(0)={:.2f}".format(grid_x_dimension, grid_y_dimension, probability_of_zero))
+plt.suptitle("{}x{}, P(0)={:.2f}"\
+             .format(grid_x_dimension, grid_y_dimension, probability_of_zero))
 plt.show()
 
 
+#
+# Also show graph G structure for pretty small grids
+#
 if grid_x_dimension<=max_size and grid_y_dimension<=max_size:
-    # show graph G structure
     nx.draw(G, with_labels=True, node_size=500, font_color='white')
     plt.show()

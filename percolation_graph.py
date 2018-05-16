@@ -40,7 +40,8 @@ def find_clusters(grid, graph):
 
     num_of_ones = len(graph)
     for i in range(num_of_ones):
-        y = graph.nodes[i]['coords'][0]; x = graph.nodes[i]['coords'][1]
+        # extract coordinates
+        y,x = graph.nodes[i]['coords'][0], graph.nodes[i]['coords'][1]
 
         if grid[y-1][x]==1:
             for node in graph.nodes.items():
